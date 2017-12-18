@@ -16,6 +16,9 @@ public class PlayerActions : MonoBehaviour {
 	private Rigidbody2D _rb2D;
 	private Animator _anim;
 
+	private bool _vertAxisInUse = false;
+	private bool _horzAxisInUse = false;
+
 	void Start () 
 	{
 		_rb2D = GetComponent<Rigidbody2D>();
@@ -35,7 +38,22 @@ public class PlayerActions : MonoBehaviour {
 		Move(_horz, _vert);
 
 		_zBtn = Input.GetKeyDown(KeyCode.Z);
-		if(_zBtn) Attack(_horz, _vert);		
+		if(_zBtn) Attack(_horz, _vert);
+
+		if(_horz == 0) 
+			_horzAxisInUse = false;
+		else if(!_horzAxisInUse)
+		{
+			_anim.SetTrigger("horzTrigger");
+			_horzAxisInUse = true;
+		}
+		if(_vert == 0) 
+			_vertAxisInUse = false;
+		else if(!_vertAxisInUse)
+		{
+			_anim.SetTrigger("vertTrigger");
+			_vertAxisInUse = true;
+		}
 	}
 
 	void Move(float h, float v)
@@ -52,8 +70,8 @@ public class PlayerActions : MonoBehaviour {
 		if(h == 0f && v == 0f) 
 			dir.x = 1f;
 		var hit = Physics2D.BoxCastAll(dir.normalized + transform.position, Vector2.one, 0f, Vector2.up, 1f, _enemyLayer);
-		_fire.SetActive(true);
-		_fire.transform.position = dir.normalized + transform.position;
+		GameObject fire = Instantiate(_fire, dir.normalized + transform.position, Quaternion.identity);
+		fire.GetComponent<Animator>().SetTrigger("fire");
 		foreach(RaycastHit2D e in hit)
 		{
 			Enemy enemy = e.transform.GetComponent<Enemy>();
@@ -62,5 +80,7 @@ public class PlayerActions : MonoBehaviour {
 				enemy.TakeDamage();
 			}
 		}
+		Destroy(fire, 1.0f);
 	}
+
 }
